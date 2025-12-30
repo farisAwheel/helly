@@ -5,6 +5,11 @@
         -[] define your own proper error handling
     
     -[] tierlist archiver
+
+    -[] debug mode
+        -[] print command debug information
+        -[] enable deregister and register button command
+        -[] register to guild instead of global
 */
 
 mod commands;
