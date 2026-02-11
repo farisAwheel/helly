@@ -5,11 +5,21 @@
         -[] define your own proper error handling
     
     -[] tierlist archiver
+        -[] if message w/ image is sent in tylist
+            -[] download the image
+            -[] scan for common tierlistmaker colors (the gray background, the tier colors, the custom name colors)
+            -[] if one is found, send a message to ask if you want to archive it then run through archive flow
+        -[] create an archive command
+            -[] get contributors
+            -[] get the message
+            -[] send the image in the archive
 
     -[] debug mode
         -[] print command debug information
         -[] enable deregister and register button command
         -[] register to guild instead of global
+
+    -[] refactor commands crate to be a folder of commands
 */
 
 mod commands;
@@ -48,16 +58,6 @@ async fn main() {
             commands: vec![
                 commands::ping(),
             ],
-            pre_command: |_ctx| {
-                Box::pin(async move {
-                   // println!("Executing command {}...", ctx.command().qualified_name); // dont do this in --release i think
-                })
-            },
-            post_command: |_ctx| {
-                Box::pin(async move {
-                   // println!("Executed command {}!", ctx.command().qualified_name); // dont do this in --release i think
-                })
-            },
             event_handler: |ctx, event, framework, data| {
                 Box::pin(event_handler(ctx, event, framework, data))
             },
@@ -84,13 +84,24 @@ async fn event_handler(
     _data: &Data,
 ) -> Result<(), Error> {
     static URL_REGEX: OnceLock<Regex> = OnceLock::new();
+    static TIERLIST_CHANNEL: OnceLock<u64> = OnceLock::new();
 
+    // set up the regex only once, statically
     let re = URL_REGEX
         .get_or_init(|| { 
             Regex::new(r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)").expect("Invalid regex")});
 
+    let tierlist_channel = TIERLIST_CHANNEL
+            .get_or_init(|| {
+                std::env::var("TIERLIST_CHANNEL").expect("missing TIERLIST_CHANNEL environment variable")
+                    .parse::<u64>().expect("invalid tierlist channel id")});
+
     match event {
         serenity::FullEvent::Message { new_message } => {
+            if new_message.channel_id.get() == *tierlist_channel && !new_message.attachments.is_empty() && !new_message.author.bot {
+                println!("no");
+            }
+
             let Some(ma) = re.captures(&new_message.content) else {
                 return Ok(());
             };
