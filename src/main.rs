@@ -29,7 +29,7 @@ type Context<'a> = poise::Context<'a, Data, Error>;
 async fn main() {
     println!("running server...");
 
-    dotenvy::dotenv().expect("failed to read .env");
+    dotenvy::dotenv().ok(); // probably not the cleanest rust, but works for both prod and dev
 
     let token = std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN environment variable");
     let intents = serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT;
