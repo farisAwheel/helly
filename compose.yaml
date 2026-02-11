@@ -12,3 +12,7 @@ services:
     build:
       context: .
       target: final
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
+      GUILD_ID: ${GUILD_ID}
+      TIERLIST_CHANNEL: ${TIERLIST_CHANNEL}
